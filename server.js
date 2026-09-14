@@ -20,15 +20,26 @@ app.post('/api/nano-vector', async (req, res) => {
             return res.json({ success: true, isImage: true, result: imageUrl });
         }
 
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-        const systemPrompt = `You are Nano Vector AI Engine.
-Category: ${category}
-Feature: ${feature}
-User Input: ${prompt}
+        // Auto-fallback array to ensure compatibility across API versions
+        const availableModels = ["gemini-1.5-flash", "gemini-2.5-flash", "gemini-pro"];
+        let result = null;
+        let lastError = null;
 
-Provide a direct, high-quality response. If writing code, enclose it in markdown blocks.`;
+        for (const modelName of availableModels) {
+            try {
+                const model = genAI.getGenerativeModel({ model: modelName });
+                const systemPrompt = `You are Nano Vector AI Engine.\nCategory: ${category}\nFeature: ${feature}\nUser Input: ${prompt}\n\nProvide a direct, helpful response.`;
+                result = await model.generateContent(systemPrompt);
+                if (result) break;
+            } catch (err) {
+                lastError = err;
+            }
+        }
 
-        const result = await model.generateContent(systemPrompt);
+        if (!result) {
+            throw lastError || new Error("Unable to connect to Gemini API models.");
+        }
+
         const response = await result.response;
         res.json({ success: true, result: response.text() });
     } catch (error) {
@@ -38,4 +49,4 @@ Provide a direct, high-quality response. If writing code, enclose it in markdown
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`Nano Vector running on port ${PORT}`));
