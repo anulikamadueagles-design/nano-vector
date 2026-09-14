@@ -1,4 +1,4 @@
-let scene, camera, renderer, headGroup, corePoints, ringGroup;
+let scene, camera, renderer, headGroup, ringGroup;
 
 function initHologram() {
     const container = document.getElementById('canvas-container');
@@ -23,7 +23,6 @@ function initHologram() {
 
     let idx = 0;
     for (let i = 0; i < faceParticlesCount; i++) {
-        // Parametric 3D Head Matrix Formula
         let u = Math.random() * Math.PI * 2;
         let v = (Math.random() - 0.5) * Math.PI;
 
@@ -32,20 +31,17 @@ function initHologram() {
         let y = radius * 1.25 * Math.sin(v);
         let z = radius * 0.9 * Math.cos(v) * Math.cos(u);
 
-        // Define Jawline and Chin
         if (y < 0) {
             let jawFactor = 1 - Math.abs(y) / (radius * 1.25);
             x *= (0.5 + 0.5 * jawFactor);
             z *= (0.6 + 0.4 * jawFactor);
         }
 
-        // Define Eye Sockets (Depressions)
         if (y > 2 && y < 14 && Math.abs(x) < 18 && z > 0) {
             z -= 4;
             x *= 0.9;
         }
 
-        // Define Nose Ridge
         if (y > -6 && y < 8 && Math.abs(x) < 5 && z > 10) {
             z += 6 - Math.abs(x);
         }
@@ -54,10 +50,9 @@ function initHologram() {
         positions[idx + 1] = y;
         positions[idx + 2] = z;
 
-        // Cyberpunk Cyan and Purple Glow Gradient
-        colors[idx] = 0.0;                       // R
-        colors[idx + 1] = 0.8 + (y / 80);        // G
-        colors[idx + 2] = 1.0;                   // B
+        colors[idx] = 0.0;
+        colors[idx + 1] = 0.8 + (y / 80);
+        colors[idx + 2] = 1.0;
 
         idx += 3;
     }
@@ -78,9 +73,7 @@ function initHologram() {
 
     // 2. Add Glowing Quantum Eyes
     const eyeGeo = new THREE.BufferGeometry();
-    const eyePos = new Float32Array([
-        -8, 6, 22,   8, 6, 22
-    ]);
+    const eyePos = new Float32Array([-8, 6, 22, 8, 6, 22]);
     eyeGeo.setAttribute('position', new THREE.BufferAttribute(eyePos, 3));
     const eyeMat = new THREE.PointsMaterial({
         size: 4.5,
@@ -107,10 +100,8 @@ function initHologram() {
 
 function animate() {
     requestAnimationFrame(animate);
-
     const time = Date.now() * 0.0015;
 
-    // Idle Facial Breathing and Scan Rotation
     if (headGroup) {
         headGroup.rotation.y = Math.sin(time * 0.5) * 0.25;
         headGroup.rotation.x = Math.cos(time * 0.3) * 0.08;
@@ -159,9 +150,7 @@ async function runNanoVector() {
     const prompt = document.getElementById('promptInput').value;
     const outputBox = document.getElementById('outputBox');
     
-    // Trigger Neural Glitch Animation on Head during processing
     if (headGroup) headGroup.rotation.y += 0.8;
-    
     outputBox.innerText = "Nano Vector AI Engine processing query...";
     
     try {
