@@ -1,73 +1,16 @@
 const NANO_VECTOR_CATEGORIES = {
-    "1. Text & NLP Core (1-10)": [
-        "General AI Chat Engine", "Article Summarizer", "Universal Multi-Lang Translator",
-        "Grammar & Syntax Corrector", "Sentiment & Emotion Analyzer", "Advanced Content Paraphraser",
-        "Keyword & Keyphrase Extractor", "SEO Metadata Generator", "Text-to-Emoji Converter", "Tone & Style Adjuster"
-    ],
-    "2. Software Engineering (11-20)": [
-        "Multi-Lang Code Generator", "Bug Finder & Auto-Fixer", "Code Refactoring Engine",
-        "SQL Query Architect", "Regex Generator & Tester", "JSON Formatter & Validator",
-        "Git Terminal Assistant", "API Documentation Generator", "Shell Script Synthesizer", "Dockerfile & Container Creator"
-    ],
-    "3. Data & Utilities (21-30)": [
-        "Base64 Encoder / Decoder", "Hash Generator (SHA/MD5)", "JWT Token Parser & Inspector",
-        "CSV to JSON Matrix Converter", "Universal Unit Converter", "Color Code Convert (HEX/RGB/HSL)",
-        "Epoch Timestamp Utility", "Global Currency Converter", "URL Encoder / Decoder", "Markdown to HTML Converter"
-    ],
-    "4. Business & Strategy (31-40)": [
-        "B2B Cold Email Generator", "Blog Post Outline Architect", "Social Media Content Strategy",
-        "Resume Metric Enhancer", "Executive Cover Letter Draft", "Elevator Pitch Synthesizer",
-        "Product FAQ Generator", "E-Commerce Product Description", "Ad Campaign Copywriter", "Brand Tagline & Slogan Generator"
-    ],
-    "5. Mathematics & Logic (41-50)": [
-        "Algebraic Equation Solver", "Step-by-Step Math Tutor", "Logical Fallacy Detector",
-        "Unit Test Suite Generator", "Cyber Security Password Engine", "UUID v4 Generator",
-        "Cron Expression Translator", "Logic Puzzle Solver", "Big-O Time Complexity Calculator", "Algorithm Step Synthesizer"
-    ],
-    "6. Security & DevOps (51-60)": [
-        "Vulnerability Auditor", "IAM Policy Architect", "Kubernetes Manifest Writer",
-        "SSL Certificate Inspector Assistant", "Nginx Config Generator", "CI/CD Pipeline Builder",
-        "Penetration Test Payload Concept", "SSH Key Pair Assistant", "Network Port Utility", "Log File Analyzer"
-    ],
-    "7. AI & Machine Learning (61-70)": [
-        "Prompt Optimization Engine", "Dataset Generator", "Model Architecture Advisor",
-        "Feature Engineering Helper", "Hyperparameter Recommender", "Machine Learning Concept Tutor",
-        "PyTorch Model Snippet Creator", "TensorFlow Pipeline Synthesizer", "Vector Embeddings Explainer", "NLP Pipeline Architect"
-    ],
-    "8. Web Development (71-80)": [
-        "CSS Flexbox/Grid Generator", "HTML5 Accessibility Auditor", "Tailwind CSS Converter",
-        "React Component Generator", "Vue.js Template Writer", "GraphQL Schema Synthesizer",
-        "Web Vitals Performance Advisor", "REST API Endpoint Planner", "CORS Policy Debugger", "Service Worker Script Helper"
-    ],
-    "9. Mobile & App Dev (81-90)": [
-        "Flutter Widget Writer", "React Native View Creator", "Android Kotlin Snippet Engine",
-        "Swift UI Component Generator", "App Store Description Optimizer", "Push Notification Writer",
-        "Mobile App Architecture Planner", "Deep Linking Route Assistant", "App Permission Inspector", "Mobile Asset Resizer Helper"
-    ],
-    "10. Cloud & Database (91-100)": [
-        "AWS CloudFormation Writer", "Terraform HCL Generator", "MongoDB Aggregation Pipeline",
-        "PostgreSQL Indexing Advisor", "Redis Caching Strategy Helper", "Firebase Rule Writer",
-        "Database Schema Normalizer", "GraphQL vs REST Architecture Advisor", "Cloud Cost Optimization Plan", "Serverless Function Synthesizer"
-    ],
-    "11. Creative Writing & Media (101-110)": [
-        "Sci-Fi Story Generator", "Screenplay Dialogue Writer", "Song Lyric & Verse Creator",
-        "Poetry Generator", "Podcast Script Outline", "YouTube Video Script Writer",
-        "Game Dialogue Tree Engine", "Character Backstory Creator", "Worldbuilding Lore Synthesizer", "Book Chapter Summary Engine"
-    ],
-    "12. Academic & Research (111-120)": [
-        "Academic Paper Abstract Drafter", "APA/MLA Citation Generator", "Literature Review Outline",
-        "Research Hypothesis Creator", "Thesis Statement Enhancer", "Statistical Test Recommender",
-        "Peer Review Critique Assistant", "Grant Proposal Outline Engine", "Methodology Section Writer", "Academic Tone Optimizer"
-    ],
-    "13. Marketing & Sales (121-130)": [
-        "Google Ads Headline Writer", "SEO Keyword Cluster Builder", "Sales Objection Handling Script",
-        "AIDA Marketing Framework Writer", "PAS Copywriting Synthesizer", "Cold Call Script Creator",
-        "Influencer Outreach Email", "Affiliate Marketing Strategy", "Customer Persona Generator", "Landing Page Headline Tester"
-    ],
-    "14. Productivity & Management (131-140)": [
-        "Daily Task Prioritizer (Eisenhower)", "Meeting Agenda Architect", "Project Milestone Breakdown",
-        "OKR (Objectives & Key Results) Writer", "Standard Operating Procedure (SOP) Creator",
-        "Conflict Resolution Advisor", "Time Tracking Optimization Plan", "Risk Assessment Matrix",
-        "Brainstorming Session Facilitator", "Executive Summary Synthesizer"
-    ]
+    "1. Text & NLP Core (1-10)": ["General AI Chat Engine", "Article Summarizer", "Universal Multi-Lang Translator", "Grammar & Syntax Corrector", "Sentiment & Emotion Analyzer", "Advanced Content Paraphraser", "Keyword & Keyphrase Extractor", "SEO Metadata Generator", "Text-to-Emoji Converter", "Tone & Style Adjuster"],
+    "2. Software Engineering (11-20)": ["Multi-Lang Code Generator", "Bug Finder & Auto-Fixer", "Code Refactoring Engine", "SQL Query Architect", "Regex Generator & Tester", "JSON Formatter & Validator", "Git Terminal Assistant", "API Documentation Generator", "Shell Script Synthesizer", "Dockerfile & Container Creator"],
+    "3. Data & Utilities (21-30)": ["Base64 Encoder / Decoder", "Hash Generator (SHA/MD5)", "JWT Token Parser & Inspector", "CSV to JSON Matrix Converter", "Universal Unit Converter", "Color Code Convert (HEX/RGB/HSL)", "Epoch Timestamp Utility", "Global Currency Converter", "URL Encoder / Decoder", "Markdown to HTML Converter"],
+    "4. Business & Strategy (31-40)": ["B2B Cold Email Generator", "Blog Post Outline Architect", "Social Media Content Strategy", "Resume Metric Enhancer", "Executive Cover Letter Draft", "Elevator Pitch Synthesizer", "Product FAQ Generator", "E-Commerce Product Description", "Ad Campaign Copywriter", "Brand Tagline & Slogan Generator"],
+    "5. Mathematics & Logic (41-50)": ["Algebraic Equation Solver", "Step-by-Step Math Tutor", "Logical Fallacy Detector", "Unit Test Suite Generator", "Cyber Security Password Engine", "UUID v4 Generator", "Cron Expression Translator", "Logic Puzzle Solver", "Big-O Time Complexity Calculator", "Algorithm Step Synthesizer"],
+    "6. Security & DevOps (51-60)": ["Vulnerability Auditor", "IAM Policy Architect", "Kubernetes Manifest Writer", "SSL Certificate Inspector Assistant", "Nginx Config Generator", "CI/CD Pipeline Builder", "Penetration Test Payload Concept", "SSH Key Pair Assistant", "Network Port Utility", "Log File Analyzer"],
+    "7. AI & Machine Learning (61-70)": ["Prompt Optimization Engine", "Dataset Generator", "Model Architecture Advisor", "Feature Engineering Helper", "Hyperparameter Recommender", "Machine Learning Concept Tutor", "PyTorch Model Snippet Creator", "TensorFlow Pipeline Synthesizer", "Vector Embeddings Explainer", "NLP Pipeline Architect"],
+    "8. Web Development (71-80)": ["CSS Flexbox/Grid Generator", "HTML5 Accessibility Auditor", "Tailwind CSS Converter", "React Component Generator", "Vue.js Template Writer", "GraphQL Schema Synthesizer", "Web Vitals Performance Advisor", "REST API Endpoint Planner", "CORS Policy Debugger", "Service Worker Script Helper"],
+    "9. Mobile & App Dev (81-90)": ["Flutter Widget Writer", "React Native View Creator", "Android Kotlin Snippet Engine", "Swift UI Component Generator", "App Store Description Optimizer", "Push Notification Writer", "Mobile App Architecture Planner", "Deep Linking Route Assistant", "App Permission Inspector", "Mobile Asset Resizer Helper"],
+    "10. Cloud & Database (91-100)": ["AWS CloudFormation Writer", "Terraform HCL Generator", "MongoDB Aggregation Pipeline", "PostgreSQL Indexing Advisor", "Redis Caching Strategy Helper", "Firebase Rule Writer", "Database Schema Normalizer", "GraphQL vs REST Architecture Advisor", "Cloud Cost Optimization Plan", "Serverless Function Synthesizer"],
+    "11. Creative Writing & Media (101-110)": ["Sci-Fi Story Generator", "Screenplay Dialogue Writer", "Song Lyric & Verse Creator", "Poetry Generator", "Podcast Script Outline", "YouTube Video Script Writer", "Game Dialogue Tree Engine", "Character Backstory Creator", "Worldbuilding Lore Synthesizer", "Book Chapter Summary Engine"],
+    "12. Academic & Research (111-120)": ["Academic Paper Abstract Drafter", "APA/MLA Citation Generator", "Literature Review Outline", "Research Hypothesis Creator", "Thesis Statement Enhancer", "Statistical Test Recommender", "Peer Review Critique Assistant", "Grant Proposal Outline Engine", "Methodology Section Writer", "Academic Tone Optimizer"],
+    "13. Marketing & Sales (121-130)": ["Google Ads Headline Writer", "SEO Keyword Cluster Builder", "Sales Objection Handling Script", "AIDA Marketing Framework Writer", "PAS Copywriting Synthesizer", "Cold Call Script Creator", "Influencer Outreach Email", "Affiliate Marketing Strategy", "Customer Persona Generator", "Landing Page Headline Tester"],
+    "14. Productivity & Management (131-140)": ["Daily Task Prioritizer (Eisenhower)", "Meeting Agenda Architect", "Project Milestone Breakdown", "OKR Writer", "Standard Operating Procedure Creator", "Conflict Resolution Advisor", "Time Tracking Plan", "Risk Assessment Matrix", "Brainstorming Session Facilitator", "Executive Summary Synthesizer"]
 };
