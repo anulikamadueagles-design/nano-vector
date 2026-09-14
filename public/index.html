@@ -2,57 +2,121 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nano Vector | Next-Gen Holographic AI</title>
-    <link rel="stylesheet" href="styles.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Nano Vector AI Engine</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #0d0f12; color: #e1e6ed; overflow-x: hidden; display: flex; height: 100vh; }
+        
+        /* Sidebar Styling (Matches Screenshot) */
+        #sidebar { width: 280px; background: #16191e; border-right: 1px solid #282c34; display: flex; flex-direction: column; transition: transform 0.3s ease; z-index: 100; height: 100vh; position: fixed; left: -280px; }
+        #sidebar.open { left: 0; }
+        @media (min-width: 768px) { #sidebar { position: relative; left: 0; } }
+
+        .sidebar-header { padding: 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #23272e; }
+        .sidebar-menu { flex: 1; overflow-y: auto; padding: 12px; }
+        .menu-item { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 8px; color: #9da5b4; cursor: pointer; text-decoration: none; margin-bottom: 4px; font-size: 15px; }
+        .menu-item:hover { background: #21252b; color: #fff; }
+        .menu-section { font-size: 12px; text-transform: uppercase; color: #5c6370; margin: 16px 12px 8px; font-weight: 600; }
+
+        /* Context Menu Modal Overlay */
+        .context-menu { display: none; position: absolute; top: 60px; right: 16px; background: #1e2227; border: 1px solid #31353d; border-radius: 12px; width: 220px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); z-index: 200; padding: 8px 0; }
+        .context-menu.active { display: block; }
+        .context-item { padding: 10px 16px; display: flex; align-items: center; gap: 12px; font-size: 14px; color: #abb2bf; cursor: pointer; }
+        .context-item:hover { background: #2c313a; color: #fff; }
+
+        /* Main Workspace */
+        #main-content { flex: 1; display: flex; flex-direction: column; height: 100vh; position: relative; width: 100%; }
+        .top-bar { padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #21252b; background: #0d0f12; z-index: 10; }
+        
+        #canvas-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; opacity: 0.6; }
+        
+        .chat-container { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 16px; z-index: 5; }
+        .output-card { background: rgba(22, 25, 30, 0.85); backdrop-filter: blur(10px); border: 1px solid #282c34; border-radius: 12px; padding: 16px; max-width: 900px; margin: 0 auto; width: 100%; line-height: 1.6; white-space: pre-wrap; }
+
+        .input-controls { padding: 16px; background: #16191e; border-top: 1px solid #282c34; z-index: 10; display: flex; flex-direction: column; gap: 10px; max-width: 900px; margin: 0 auto; width: 100%; }
+        .select-group { display: flex; gap: 10px; flex-wrap: wrap; }
+        select { flex: 1; background: #21252b; border: 1px solid #3b4048; color: #abb2bf; padding: 10px; border-radius: 8px; outline: none; min-width: 140px; }
+        
+        .input-box { display: flex; gap: 10px; align-items: center; background: #21252b; border: 1px solid #3b4048; padding: 6px 12px; border-radius: 24px; }
+        input[type="text"] { flex: 1; background: transparent; border: none; color: #fff; outline: none; padding: 8px; font-size: 15px; }
+        button.send-btn { background: #61afef; border: none; color: #0d0f12; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    </style>
 </head>
 <body>
-    <div class="hologram-overlay"></div>
-    <div id="canvas-container"></div>
-    <div class="app-layout">
-        <aside class="sidebar">
-            <div class="brand-header">
-                <div class="hologram-glyph">NV</div>
-                <div>
-                    <h2>NANO VECTOR</h2>
-                    <span class="sub-brand">VECTOR'S ELEMENT TECH</span>
-                </div>
+
+    <!-- Sidebar Menu (Matches Image Features) -->
+    <div id="sidebar">
+        <div class="sidebar-header">
+            <h3>Nano Vector</h3>
+            <i class="fa-solid fa-xmark" style="cursor:pointer;" onclick="toggleSidebar()"></i>
+        </div>
+        <div class="sidebar-menu">
+            <div class="menu-item" onclick="newChat()"><i class="fa-regular fa-pen-to-square"></i> New chat</div>
+            <div class="menu-item"><i class="fa-solid fa-magnifying-glass"></i> Search chats</div>
+            <div class="menu-item"><i class="fa-regular fa-image"></i> Images</div>
+            <div class="menu-item"><i class="fa-solid fa-film"></i> Videos</div>
+            <div class="menu-item"><i class="fa-solid fa-border-all"></i> Library</div>
+            
+            <div class="menu-section">Notebooks</div>
+            <div class="menu-item"><i class="fa-solid fa-plus"></i> New notebook</div>
+
+            <div class="menu-section">Recent</div>
+            <div class="menu-item"><i class="fa-regular fa-message"></i> Generating a Code Zip Archive</div>
+            <div class="menu-item"><i class="fa-regular fa-message"></i> Unlimited AI Coding With GitHub...</div>
+            <div class="menu-item"><i class="fa-regular fa-message"></i> Network Tools (discovery, port scan)</div>
+            <div class="menu-item"><i class="fa-regular fa-message"></i> Waiting For Him To Leave</div>
+        </div>
+    </div>
+
+    <!-- Main Section -->
+    <div id="main-content">
+        <div class="top-bar">
+            <div style="display:flex; align-items:center; gap:12px;">
+                <i class="fa-solid fa-bars" style="cursor:pointer;" onclick="toggleSidebar()"></i>
+                <span style="font-weight:600; font-size:18px;">Nano Vector Engine</span>
             </div>
-            <div class="creator-badge">
-                <span class="label">CREATOR & ARCHITECT</span>
-                <span class="name">David Kamsi Elvis</span>
-                <span class="status-indicator"><span class="pulse"></span> QUANTUM MATRIX ACTIVE</span>
+            <div>
+                <i class="fa-solid fa-ellipsis" style="cursor:pointer; font-size:20px;" onclick="toggleContextMenu()"></i>
             </div>
-            <div class="category-selector">
-                <label for="categoryFilter">AI CATEGORY DIRECTORY (140 MODULES)</label>
+        </div>
+
+        <!-- Pop-over Context Menu (From Screenshot) -->
+        <div class="context-menu" id="contextMenu">
+            <div class="context-item"><i class="fa-solid fa-share-nodes"></i> Share conversation</div>
+            <div class="context-item"><i class="fa-solid fa-thumbtack"></i> Pin</div>
+            <div class="context-item"><i class="fa-solid fa-pencil"></i> Rename</div>
+            <div class="context-item"><i class="fa-regular fa-circle-question"></i> Help</div>
+            <div class="context-item"><i class="fa-regular fa-comment-dots"></i> Feedback</div>
+            <div class="context-item" style="color:#e06c75;"><i class="fa-regular fa-trash-can"></i> Delete</div>
+        </div>
+
+        <div id="canvas-container"></div>
+
+        <div class="chat-container">
+            <div class="output-card" id="outputBox">Initialize Nano Vector Engine with a quick query or command below.</div>
+        </div>
+
+        <div class="input-controls">
+            <div class="select-group">
                 <select id="categoryFilter" onchange="updateFeatureDropdown()"></select>
-            </div>
-            <div class="feature-selector">
-                <label for="featureSelect">ACTIVE NEURAL FEATURE</label>
                 <select id="featureSelect"></select>
             </div>
-        </aside>
-        <main class="main-content">
-            <header class="top-nav">
-                <div class="system-status"><span class="tag">STATUS</span><span class="val">OPERATIONAL</span></div>
-                <div class="creator-tag">Engineered by <strong>David Kamsi Elvis</strong> | Vector's Element Tech</div>
-            </header>
-            <div class="workspace">
-                <div class="panel prompt-panel">
-                    <h3>⚡ NEURAL INPUT MATRIX</h3>
-                    <textarea id="promptInput" placeholder="Enter query parameters..."></textarea>
-                    <button id="executeBtn" onclick="runNanoVector()">ENGAGE NANO VECTOR</button>
-                </div>
-                <div class="panel response-panel">
-                    <h3>🔮 HOLOGRAPHIC SYNTHESIS</h3>
-                    <div id="outputBox" class="output-container">Nano Vector Initialized.</div>
-                </div>
+            <div class="input-box">
+                <input type="text" id="promptInput" placeholder="Ask Nano Vector AI anything...">
+                <button class="send-btn" onclick="runNanoVector()"><i class="fa-solid fa-arrow-up"></i></button>
             </div>
-        </main>
+        </div>
     </div>
+
     <script src="features.js"></script>
     <script src="script.js"></script>
+    <script>
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
+        function toggleContextMenu() { document.getElementById('contextMenu').classList.toggle('active'); }
+        function newChat() { document.getElementById('outputBox').innerText = 'Started a new session.'; }
+    </script>
 </body>
 </html>
