@@ -5,52 +5,58 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Nano Vector AI Engine</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background-color: #0d0f12; color: #e1e6ed; overflow-x: hidden; display: flex; height: 100vh; }
-        
-        /* Sidebar Styling (Matches Screenshot) */
-        #sidebar { width: 280px; background: #16191e; border-right: 1px solid #282c34; display: flex; flex-direction: column; transition: transform 0.3s ease; z-index: 100; height: 100vh; position: fixed; left: -280px; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        html, body { height: 100%; overflow: hidden; background-color: #0b0c10; color: #c5c6c7; }
+        body { display: flex; }
+
+        /* Compact Sidebar */
+        #sidebar { width: 260px; background: #1f2833; display: flex; flex-direction: column; transition: transform 0.3s ease; z-index: 100; height: 100%; position: absolute; left: -260px; }
         #sidebar.open { left: 0; }
         @media (min-width: 768px) { #sidebar { position: relative; left: 0; } }
 
-        .sidebar-header { padding: 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #23272e; }
-        .sidebar-menu { flex: 1; overflow-y: auto; padding: 12px; }
-        .menu-item { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 8px; color: #9da5b4; cursor: pointer; text-decoration: none; margin-bottom: 4px; font-size: 15px; }
-        .menu-item:hover { background: #21252b; color: #fff; }
-        .menu-section { font-size: 12px; text-transform: uppercase; color: #5c6370; margin: 16px 12px 8px; font-weight: 600; }
+        .sidebar-header { padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #0b0c10; }
+        .sidebar-menu { flex: 1; overflow-y: auto; padding: 10px; }
+        .menu-item { display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 6px; color: #c5c6c7; cursor: pointer; font-size: 14px; }
+        .menu-item:hover { background: #45a29e; color: #0b0c10; }
+        .menu-section { font-size: 11px; text-transform: uppercase; color: #66fcf1; margin: 12px 10px 4px; font-weight: bold; }
 
-        /* Context Menu Modal Overlay */
-        .context-menu { display: none; position: absolute; top: 60px; right: 16px; background: #1e2227; border: 1px solid #31353d; border-radius: 12px; width: 220px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); z-index: 200; padding: 8px 0; }
+        /* Menu Overlay with Explicit 'X' Dismiss Header */
+        .context-menu { display: none; position: absolute; top: 45px; right: 12px; background: #1f2833; border: 1px solid #45a29e; border-radius: 8px; width: 210px; box-shadow: 0 8px 20px rgba(0,0,0,0.8); z-index: 300; }
         .context-menu.active { display: block; }
-        .context-item { padding: 10px 16px; display: flex; align-items: center; gap: 12px; font-size: 14px; color: #abb2bf; cursor: pointer; }
-        .context-item:hover { background: #2c313a; color: #fff; }
+        .context-header { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-bottom: 1px solid #0b0c10; font-size: 12px; font-weight: bold; color: #66fcf1; }
+        .context-item { padding: 8px 12px; display: flex; align-items: center; gap: 10px; font-size: 13px; color: #c5c6c7; cursor: pointer; }
+        .context-item:hover { background: #45a29e; color: #0b0c10; }
 
-        /* Main Workspace */
-        #main-content { flex: 1; display: flex; flex-direction: column; height: 100vh; position: relative; width: 100%; }
-        .top-bar { padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #21252b; background: #0d0f12; z-index: 10; }
-        
-        #canvas-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; opacity: 0.6; }
-        
-        .chat-container { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 16px; z-index: 5; }
-        .output-card { background: rgba(22, 25, 30, 0.85); backdrop-filter: blur(10px); border: 1px solid #282c34; border-radius: 12px; padding: 16px; max-width: 900px; margin: 0 auto; width: 100%; line-height: 1.6; white-space: pre-wrap; }
+        /* Main Workspace Optimized to Prevent Vertical Scroll Stacking */
+        #main-content { flex: 1; display: flex; flex-direction: column; height: 100%; position: relative; width: 100%; }
+        .top-bar { padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; background: #0b0c10; border-bottom: 1px solid #1f2833; z-index: 10; height: 48px; }
 
-        .input-controls { padding: 16px; background: #16191e; border-top: 1px solid #282c34; z-index: 10; display: flex; flex-direction: column; gap: 10px; max-width: 900px; margin: 0 auto; width: 100%; }
-        .select-group { display: flex; gap: 10px; flex-wrap: wrap; }
-        select { flex: 1; background: #21252b; border: 1px solid #3b4048; color: #abb2bf; padding: 10px; border-radius: 8px; outline: none; min-width: 140px; }
-        
-        .input-box { display: flex; gap: 10px; align-items: center; background: #21252b; border: 1px solid #3b4048; padding: 6px 12px; border-radius: 24px; }
-        input[type="text"] { flex: 1; background: transparent; border: none; color: #fff; outline: none; padding: 8px; font-size: 15px; }
-        button.send-btn { background: #61afef; border: none; color: #0d0f12; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        #canvas-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; opacity: 0.35; }
+
+        .chat-container { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 12px; z-index: 5; }
+        .output-card { background: rgba(31, 40, 51, 0.85); backdrop-filter: blur(8px); border: 1px solid #45a29e; border-radius: 8px; padding: 14px; width: 100%; max-width: 800px; margin: 0 auto; line-height: 1.5; font-size: 14px; white-space: pre-wrap; word-break: break-word; }
+
+        .download-btn { display: inline-flex; align-items: center; gap: 8px; background: #66fcf1; color: #0b0c10; padding: 8px 14px; border-radius: 6px; border: none; font-weight: bold; cursor: pointer; margin-top: 10px; }
+
+        /* Compact Fixed Bottom Input Area */
+        .input-controls { padding: 10px; background: #0b0c10; border-top: 1px solid #1f2833; z-index: 10; display: flex; flex-direction: column; gap: 8px; width: 100%; max-width: 800px; margin: 0 auto; }
+        .select-group { display: flex; gap: 8px; }
+        select { flex: 1; background: #1f2833; border: 1px solid #45a29e; color: #66fcf1; padding: 8px; border-radius: 6px; outline: none; font-size: 12px; text-overflow: ellipsis; }
+
+        .input-box { display: flex; gap: 8px; align-items: center; background: #1f2833; border: 1px solid #45a29e; padding: 4px 10px; border-radius: 20px; }
+        input[type="text"] { flex: 1; background: transparent; border: none; color: #fff; outline: none; padding: 6px; font-size: 14px; }
+        button.send-btn { background: #66fcf1; border: none; color: #0b0c10; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
     </style>
 </head>
 <body>
 
-    <!-- Sidebar Menu (Matches Image Features) -->
+    <!-- Compact Sidebar Menu -->
     <div id="sidebar">
         <div class="sidebar-header">
-            <h3>Nano Vector</h3>
+            <span style="color:#66fcf1; font-weight:bold;">Nano Vector v3.0</span>
             <i class="fa-solid fa-xmark" style="cursor:pointer;" onclick="toggleSidebar()"></i>
         </div>
         <div class="sidebar-menu">
@@ -65,38 +71,38 @@
 
             <div class="menu-section">Recent</div>
             <div class="menu-item"><i class="fa-regular fa-message"></i> Generating a Code Zip Archive</div>
-            <div class="menu-item"><i class="fa-regular fa-message"></i> Unlimited AI Coding With GitHub...</div>
-            <div class="menu-item"><i class="fa-regular fa-message"></i> Network Tools (discovery, port scan)</div>
-            <div class="menu-item"><i class="fa-regular fa-message"></i> Waiting For Him To Leave</div>
+            <div class="menu-item"><i class="fa-regular fa-message"></i> Unlimited AI Coding Project</div>
         </div>
     </div>
 
-    <!-- Main Section -->
+    <!-- Main Workspace -->
     <div id="main-content">
         <div class="top-bar">
-            <div style="display:flex; align-items:center; gap:12px;">
-                <i class="fa-solid fa-bars" style="cursor:pointer;" onclick="toggleSidebar()"></i>
-                <span style="font-weight:600; font-size:18px;">Nano Vector Engine</span>
+            <div style="display:flex; align-items:center; gap:10px;">
+                <i class="fa-solid fa-bars" style="cursor:pointer; font-size:18px;" onclick="toggleSidebar()"></i>
+                <span style="font-weight:bold; font-size:15px; color:#66fcf1;">Nano Vector</span>
             </div>
-            <div>
-                <i class="fa-solid fa-ellipsis" style="cursor:pointer; font-size:20px;" onclick="toggleContextMenu()"></i>
-            </div>
+            <i class="fa-solid fa-ellipsis-vertical" style="cursor:pointer; font-size:18px;" onclick="toggleContextMenu()"></i>
         </div>
 
-        <!-- Pop-over Context Menu (From Screenshot) -->
+        <!-- Popup Menu with Top Close Button (X) -->
         <div class="context-menu" id="contextMenu">
+            <div class="context-header">
+                <span>Options</span>
+                <i class="fa-solid fa-xmark" style="cursor:pointer;" onclick="toggleContextMenu()"></i>
+            </div>
             <div class="context-item"><i class="fa-solid fa-share-nodes"></i> Share conversation</div>
             <div class="context-item"><i class="fa-solid fa-thumbtack"></i> Pin</div>
             <div class="context-item"><i class="fa-solid fa-pencil"></i> Rename</div>
             <div class="context-item"><i class="fa-regular fa-circle-question"></i> Help</div>
             <div class="context-item"><i class="fa-regular fa-comment-dots"></i> Feedback</div>
-            <div class="context-item" style="color:#e06c75;"><i class="fa-regular fa-trash-can"></i> Delete</div>
+            <div class="context-item" style="color:#e06c75;" onclick="toggleContextMenu()"><i class="fa-regular fa-trash-can"></i> Delete</div>
         </div>
 
         <div id="canvas-container"></div>
 
         <div class="chat-container">
-            <div class="output-card" id="outputBox">Initialize Nano Vector Engine with a quick query or command below.</div>
+            <div class="output-card" id="outputBox">Engine ready with 190 features. Select a module or ask a question.</div>
         </div>
 
         <div class="input-controls">
@@ -105,7 +111,7 @@
                 <select id="featureSelect"></select>
             </div>
             <div class="input-box">
-                <input type="text" id="promptInput" placeholder="Ask Nano Vector AI anything...">
+                <input type="text" id="promptInput" placeholder="Enter request or prompt...">
                 <button class="send-btn" onclick="runNanoVector()"><i class="fa-solid fa-arrow-up"></i></button>
             </div>
         </div>
@@ -117,6 +123,52 @@
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
         function toggleContextMenu() { document.getElementById('contextMenu').classList.toggle('active'); }
         function newChat() { document.getElementById('outputBox').innerText = 'Started a new session.'; }
+
+        async function downloadCodeAsZip(textContent) {
+            const zip = new JSZip();
+            zip.file("project_output.txt", textContent);
+            const content = await zip.generateAsync({ type: "blob" });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(content);
+            link.download = "nano_vector_code.zip";
+            link.click();
+        }
+
+        async function runNanoVector() {
+            const category = document.getElementById('categoryFilter').value;
+            const feature = document.getElementById('featureSelect').value;
+            const prompt = document.getElementById('promptInput').value;
+            const outputBox = document.getElementById('outputBox');
+            
+            outputBox.innerText = "Processing...";
+            
+            try {
+                const response = await fetch('/api/nano-vector', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ category, feature, prompt })
+                });
+                const data = await response.json();
+                
+                if (data.isImage) {
+                    outputBox.innerHTML = `<img src="${data.result}" style="width:100%; border-radius:8px; margin-top:8px;">`;
+                } else if (data.success) {
+                    outputBox.innerText = data.result;
+                    if (feature.includes("Code") || feature.includes("ZIP") || data.result.includes("```")) {
+                        const btn = document.createElement("button");
+                        btn.className = "download-btn";
+                        btn.innerHTML = `<i class="fa-solid fa-file-zipper"></i> Download Project ZIP`;
+                        btn.onclick = () => downloadCodeAsZip(data.result);
+                        outputBox.appendChild(document.createElement("br"));
+                        outputBox.appendChild(btn);
+                    }
+                } else {
+                    outputBox.innerText = "Error: " + data.error;
+                }
+            } catch (err) {
+                outputBox.innerText = "Connection Error: " + err.message;
+            }
+        }
     </script>
 </body>
 </html>

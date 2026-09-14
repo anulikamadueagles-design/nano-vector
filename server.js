@@ -13,22 +13,24 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 app.post('/api/nano-vector', async (req, res) => {
     try {
         const { category, feature, prompt } = req.body;
-        
-        // Updated to use the correct model string for modern @google/generative-ai SDK
+
+        if (feature === "AI Image Generator") {
+            const encodedPrompt = encodeURIComponent(prompt || "Sci-Fi Cyberpunk AI Face Hologram");
+            const imageUrl = `https://pollinations.ai/p/${encodedPrompt}?width=800&height=800&seed=42`;
+            return res.json({ success: true, isImage: true, result: imageUrl });
+        }
+
         const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-        
-        const systemPrompt = `You are Nano Vector AI Engine. 
+        const systemPrompt = `You are Nano Vector AI Engine.
 Category: ${category}
 Feature: ${feature}
 User Input: ${prompt}
 
-Provide a direct, high-quality, professional, and well-structured response.`;
+Provide a direct, high-quality response. If writing code, enclose it in markdown blocks.`;
 
         const result = await model.generateContent(systemPrompt);
         const response = await result.response;
-        const text = response.text();
-
-        res.json({ success: true, result: text });
+        res.json({ success: true, result: response.text() });
     } catch (error) {
         console.error("Gemini API Error:", error);
         res.status(500).json({ success: false, error: error.message });
@@ -36,6 +38,4 @@ Provide a direct, high-quality, professional, and well-structured response.`;
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Nano Vector Server running on port ${PORT}`);
-});
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
