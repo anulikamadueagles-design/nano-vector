@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nano Vector | Next-Gen Holographic AI</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="hologram-overlay"></div>
+    <div id="canvas-container"></div>
+    <div class="app-layout">
+        <aside class="sidebar">
+            <div class="brand-header">
+                <div class="hologram-glyph">NV</div>
+                <div>
+                    <h2>NANO VECTOR</h2>
+                    <span class="sub-brand">VECTOR'S ELEMENT TECH</span>
+                </div>
+            </div>
+            <div class="creator-badge">
+                <span class="label">CREATOR & ARCHITECT</span>
+                <span class="name">David Kamsi Elvis</span>
+                <span class="status-indicator"><span class="pulse"></span> QUANTUM MATRIX ACTIVE</span>
+            </div>
+            <div class="category-selector">
+                <label for="categoryFilter">AI CATEGORY DIRECTORY (140 MODULES)</label>
+                <select id="categoryFilter" onchange="updateFeatureDropdown()"></select>
+            </div>
+            <div class="feature-selector">
+                <label for="featureSelect">ACTIVE NEURAL FEATURE</label>
+                <select id="featureSelect"></select>
+            </div>
+        </aside>
+        <main class="main-content">
+            <header class="top-nav">
+                <div class="system-status"><span class="tag">STATUS</span><span class="val">OPERATIONAL</span></div>
+                <div class="creator-tag">Engineered by <strong>David Kamsi Elvis</strong> | Vector's Element Tech</div>
+            </header>
+            <div class="workspace">
+                <div class="panel prompt-panel">
+                    <h3>⚡ NEURAL INPUT MATRIX</h3>
+                    <textarea id="promptInput" placeholder="Enter query parameters..."></textarea>
+                    <button id="executeBtn" onclick="runNanoVector()">ENGAGE NANO VECTOR</button>
+                </div>
+                <div class="panel response-panel">
+                    <h3>🔮 HOLOGRAPHIC SYNTHESIS</h3>
+                    <div id="outputBox" class="output-container">Nano Vector Initialized.</div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="features.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

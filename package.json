@@ -1,0 +1,12 @@
+{
+  "name": "nano-vector-ai",
+  "version": "2.0.0",
+  "description": "Next-Gen Cyberpunk Holographic AI Platform with 140 Features",
+  "main": "server.js",
+  "scripts": { "start": "node server.js" },
+  "dependencies": {
+    "@google/generative-ai": "^0.21.0",
+    "cors": "^2.8.5",
+    "express": "^4.19.2"
+  }
+}
