@@ -20,26 +20,17 @@ app.post('/api/nano-vector', async (req, res) => {
             return res.json({ success: true, isImage: true, result: imageUrl });
         }
 
-        // Auto-fallback array to ensure compatibility across API versions
-        const availableModels = ["gemini-1.5-flash", "gemini-2.5-flash", "gemini-pro"];
-        let result = null;
-        let lastError = null;
+        // Updated model primary key for current Gemini API specifications
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-        for (const modelName of availableModels) {
-            try {
-                const model = genAI.getGenerativeModel({ model: modelName });
-                const systemPrompt = `You are Nano Vector AI Engine.\nCategory: ${category}\nFeature: ${feature}\nUser Input: ${prompt}\n\nProvide a direct, helpful response.`;
-                result = await model.generateContent(systemPrompt);
-                if (result) break;
-            } catch (err) {
-                lastError = err;
-            }
-        }
+        const systemPrompt = `You are Nano Vector AI Engine.
+Category: ${category}
+Feature: ${feature}
+User Input: ${prompt}
 
-        if (!result) {
-            throw lastError || new Error("Unable to connect to Gemini API models.");
-        }
+Provide a direct, high-quality, and helpful response.`;
 
+        const result = await model.generateContent(systemPrompt);
         const response = await result.response;
         res.json({ success: true, result: response.text() });
     } catch (error) {
