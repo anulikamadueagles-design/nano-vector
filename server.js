@@ -5,7 +5,7 @@ const cors = require('cors');
 
 const app = express();
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
@@ -14,25 +14,42 @@ app.post('/api/nano-vector', async (req, res) => {
     try {
         const { category, feature, prompt } = req.body;
 
-        if (feature === "AI Image Generator") {
-            const encodedPrompt = encodeURIComponent(prompt || "Sci-Fi Cyberpunk AI Face Hologram");
-            const imageUrl = `https://pollinations.ai/p/${encodedPrompt}?width=800&height=800&seed=42`;
+        // Custom Creator System Prompt
+        const systemInstruction = `You are Nano Vector AI Engine, an advanced AI system created by David Kamsi Elvis by Vectors Element Tech. 
+Your personality is intelligent, sleek, professional, and friendly. 
+When asked about your creator, clearly state that you were created by David Kamsi Elvis by Vectors Element Tech.
+Category: ${category}
+Feature: ${feature}
+User Input: ${prompt}`;
+
+        if (feature === "AI Image Generator" || feature === "Drawing Canvas AI") {
+            const encodedPrompt = encodeURIComponent(prompt || "Sci-Fi Cyberpunk AI Hologram Face");
+            const imageUrl = `https://pollinations.ai/p/${encodedPrompt}?width=800&height=800&seed=${Math.floor(Math.random()*10000)}`;
             return res.json({ success: true, isImage: true, result: imageUrl });
         }
 
-        // Updated model primary key for current Gemini API specifications
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        // Active Gemini models for 2026
+        const activeModels = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-2.5-pro"];
+        let responseText = null;
+        let lastError = null;
 
-        const systemPrompt = `You are Nano Vector AI Engine.
-Category: ${category}
-Feature: ${feature}
-User Input: ${prompt}
+        for (const modelName of activeModels) {
+            try {
+                const model = genAI.getGenerativeModel({ model: modelName });
+                const result = await model.generateContent(systemInstruction);
+                const response = await result.response;
+                responseText = response.text();
+                if (responseText) break;
+            } catch (err) {
+                lastError = err;
+            }
+        }
 
-Provide a direct, high-quality, and helpful response.`;
+        if (!responseText) {
+            throw lastError || new Error("No available Gemini model could process the request.");
+        }
 
-        const result = await model.generateContent(systemPrompt);
-        const response = await result.response;
-        res.json({ success: true, result: response.text() });
+        res.json({ success: true, result: responseText });
     } catch (error) {
         console.error("Gemini API Error:", error);
         res.status(500).json({ success: false, error: error.message });

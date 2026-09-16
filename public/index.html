@@ -4,169 +4,243 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Nano Vector AI Engine</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         html, body { height: 100%; overflow: hidden; background-color: #0b0c10; color: #c5c6c7; }
-        body { display: flex; }
+        body { display: flex; flex-direction: column; }
 
-        /* Compact Sidebar */
-        #sidebar { width: 260px; background: #1f2833; display: flex; flex-direction: column; transition: transform 0.3s ease; z-index: 100; height: 100%; position: absolute; left: -260px; }
-        #sidebar.open { left: 0; }
-        @media (min-width: 768px) { #sidebar { position: relative; left: 0; } }
+        .top-bar { height: 48px; background: #1f2833; display: flex; justify-content: space-between; align-items: center; padding: 0 16px; border-bottom: 1px solid #45a29e; z-index: 20; }
+        .logo { font-size: 16px; font-weight: bold; color: #66fcf1; }
+        .creator-tag { font-size: 10px; color: #45a29e; }
 
-        .sidebar-header { padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #0b0c10; }
-        .sidebar-menu { flex: 1; overflow-y: auto; padding: 10px; }
-        .menu-item { display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 6px; color: #c5c6c7; cursor: pointer; font-size: 14px; }
-        .menu-item:hover { background: #45a29e; color: #0b0c10; }
-        .menu-section { font-size: 11px; text-transform: uppercase; color: #66fcf1; margin: 12px 10px 4px; font-weight: bold; }
+        /* Hologram Canvas View */
+        #hologram-viewport { height: 180px; width: 100%; background: #000; display: flex; justify-content: center; align-items: center; position: relative; border-bottom: 1px solid #1f2833; }
+        canvas#hologramCanvas { width: 100%; height: 100%; display: block; }
 
-        /* Menu Overlay with Explicit 'X' Dismiss Header */
-        .context-menu { display: none; position: absolute; top: 45px; right: 12px; background: #1f2833; border: 1px solid #45a29e; border-radius: 8px; width: 210px; box-shadow: 0 8px 20px rgba(0,0,0,0.8); z-index: 300; }
-        .context-menu.active { display: block; }
-        .context-header { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-bottom: 1px solid #0b0c10; font-size: 12px; font-weight: bold; color: #66fcf1; }
-        .context-item { padding: 8px 12px; display: flex; align-items: center; gap: 10px; font-size: 13px; color: #c5c6c7; cursor: pointer; }
-        .context-item:hover { background: #45a29e; color: #0b0c10; }
+        /* Content Workspace */
+        .workspace { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 12px; }
+        .card { background: #1f2833; border: 1px solid #45a29e; border-radius: 8px; padding: 12px; font-size: 14px; line-height: 1.5; white-space: pre-wrap; word-break: break-word; }
 
-        /* Main Workspace Optimized to Prevent Vertical Scroll Stacking */
-        #main-content { flex: 1; display: flex; flex-direction: column; height: 100%; position: relative; width: 100%; }
-        .top-bar { padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; background: #0b0c10; border-bottom: 1px solid #1f2833; z-index: 10; height: 48px; }
+        /* Interactive Drawing Section */
+        #drawingArea { display: none; background: #0b0c10; border: 1px solid #45a29e; border-radius: 8px; padding: 8px; text-align: center; }
+        #paintCanvas { background: #fff; border-radius: 4px; cursor: crosshair; touch-action: none; }
 
-        #canvas-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; opacity: 0.35; }
+        /* Controls Area */
+        .controls { background: #1f2833; padding: 10px; border-top: 1px solid #45a29e; display: flex; flex-direction: column; gap: 8px; }
+        .row { display: flex; gap: 8px; }
+        select, input[type="text"] { background: #0b0c10; border: 1px solid #45a29e; color: #66fcf1; padding: 8px; border-radius: 6px; font-size: 13px; outline: none; }
+        select { flex: 1; }
+        input[type="text"] { flex: 1; color: #fff; }
 
-        .chat-container { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 12px; z-index: 5; }
-        .output-card { background: rgba(31, 40, 51, 0.85); backdrop-filter: blur(8px); border: 1px solid #45a29e; border-radius: 8px; padding: 14px; width: 100%; max-width: 800px; margin: 0 auto; line-height: 1.5; font-size: 14px; white-space: pre-wrap; word-break: break-word; }
-
-        .download-btn { display: inline-flex; align-items: center; gap: 8px; background: #66fcf1; color: #0b0c10; padding: 8px 14px; border-radius: 6px; border: none; font-weight: bold; cursor: pointer; margin-top: 10px; }
-
-        /* Compact Fixed Bottom Input Area */
-        .input-controls { padding: 10px; background: #0b0c10; border-top: 1px solid #1f2833; z-index: 10; display: flex; flex-direction: column; gap: 8px; width: 100%; max-width: 800px; margin: 0 auto; }
-        .select-group { display: flex; gap: 8px; }
-        select { flex: 1; background: #1f2833; border: 1px solid #45a29e; color: #66fcf1; padding: 8px; border-radius: 6px; outline: none; font-size: 12px; text-overflow: ellipsis; }
-
-        .input-box { display: flex; gap: 8px; align-items: center; background: #1f2833; border: 1px solid #45a29e; padding: 4px 10px; border-radius: 20px; }
-        input[type="text"] { flex: 1; background: transparent; border: none; color: #fff; outline: none; padding: 6px; font-size: 14px; }
-        button.send-btn { background: #66fcf1; border: none; color: #0b0c10; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .btn { background: #66fcf1; color: #0b0c10; border: none; padding: 8px 14px; border-radius: 6px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 6px; justify-content: center; }
+        .btn-icon { width: 36px; height: 36px; border-radius: 50%; padding: 0; }
+        .btn-outline { background: transparent; border: 1px solid #66fcf1; color: #66fcf1; }
     </style>
 </head>
 <body>
 
-    <!-- Compact Sidebar Menu -->
-    <div id="sidebar">
-        <div class="sidebar-header">
-            <span style="color:#66fcf1; font-weight:bold;">Nano Vector v3.0</span>
-            <i class="fa-solid fa-xmark" style="cursor:pointer;" onclick="toggleSidebar()"></i>
+    <div class="top-bar">
+        <div>
+            <div class="logo">Nano Vector AI</div>
+            <div class="creator-tag">By David Kamsi Elvis (Vectors Element Tech)</div>
         </div>
-        <div class="sidebar-menu">
-            <div class="menu-item" onclick="newChat()"><i class="fa-regular fa-pen-to-square"></i> New chat</div>
-            <div class="menu-item"><i class="fa-solid fa-magnifying-glass"></i> Search chats</div>
-            <div class="menu-item"><i class="fa-regular fa-image"></i> Images</div>
-            <div class="menu-item"><i class="fa-solid fa-film"></i> Videos</div>
-            <div class="menu-item"><i class="fa-solid fa-border-all"></i> Library</div>
-            
-            <div class="menu-section">Notebooks</div>
-            <div class="menu-item"><i class="fa-solid fa-plus"></i> New notebook</div>
+        <button class="btn btn-outline" style="font-size:11px;" onclick="toggleDrawing()">
+            <i class="fa-solid fa-paintbrush"></i> Drawing
+        </button>
+    </div>
 
-            <div class="menu-section">Recent</div>
-            <div class="menu-item"><i class="fa-regular fa-message"></i> Generating a Code Zip Archive</div>
-            <div class="menu-item"><i class="fa-regular fa-message"></i> Unlimited AI Coding Project</div>
+    <!-- AI Hologram Face Canvas -->
+    <div id="hologram-viewport">
+        <canvas id="hologramCanvas"></canvas>
+    </div>
+
+    <!-- Interactive Canvas Drawing Tool -->
+    <div id="drawingArea">
+        <canvas id="paintCanvas" width="300" height="150"></canvas>
+        <div style="margin-top:6px; display:flex; justify-content:center; gap:8px;">
+            <button class="btn btn-outline" style="font-size:11px;" onclick="clearCanvas()">Clear</button>
+            <button class="btn" style="font-size:11px;" onclick="sendDrawing()">Analyze Drawing</button>
         </div>
     </div>
 
-    <!-- Main Workspace -->
-    <div id="main-content">
-        <div class="top-bar">
-            <div style="display:flex; align-items:center; gap:10px;">
-                <i class="fa-solid fa-bars" style="cursor:pointer; font-size:18px;" onclick="toggleSidebar()"></i>
-                <span style="font-weight:bold; font-size:15px; color:#66fcf1;">Nano Vector</span>
-            </div>
-            <i class="fa-solid fa-ellipsis-vertical" style="cursor:pointer; font-size:18px;" onclick="toggleContextMenu()"></i>
+    <div class="workspace" id="workspace">
+        <div class="card" id="outputBox">Hello! I am Nano Vector AI, created by David Kamsi Elvis by Vectors Element Tech. How can I assist you today?</div>
+    </div>
+
+    <div class="controls">
+        <div class="row">
+            <select id="categorySelect" onchange="updateFeatures()">
+                <option value="General AI Core">1. General AI Core</option>
+                <option value="Software & Code">2. Software & Code</option>
+                <option value="Image & Media">3. Image & Media</option>
+            </select>
+            <select id="featureSelect">
+                <option value="General AI Chat Engine">General AI Chat Engine</option>
+                <option value="AI Image Generator">AI Image Generator</option>
+                <option value="Drawing Canvas AI">Drawing Canvas AI</option>
+            </select>
         </div>
-
-        <!-- Popup Menu with Top Close Button (X) -->
-        <div class="context-menu" id="contextMenu">
-            <div class="context-header">
-                <span>Options</span>
-                <i class="fa-solid fa-xmark" style="cursor:pointer;" onclick="toggleContextMenu()"></i>
-            </div>
-            <div class="context-item"><i class="fa-solid fa-share-nodes"></i> Share conversation</div>
-            <div class="context-item"><i class="fa-solid fa-thumbtack"></i> Pin</div>
-            <div class="context-item"><i class="fa-solid fa-pencil"></i> Rename</div>
-            <div class="context-item"><i class="fa-regular fa-circle-question"></i> Help</div>
-            <div class="context-item"><i class="fa-regular fa-comment-dots"></i> Feedback</div>
-            <div class="context-item" style="color:#e06c75;" onclick="toggleContextMenu()"><i class="fa-regular fa-trash-can"></i> Delete</div>
-        </div>
-
-        <div id="canvas-container"></div>
-
-        <div class="chat-container">
-            <div class="output-card" id="outputBox">Engine ready with 190 features. Select a module or ask a question.</div>
-        </div>
-
-        <div class="input-controls">
-            <div class="select-group">
-                <select id="categoryFilter" onchange="updateFeatureDropdown()"></select>
-                <select id="featureSelect"></select>
-            </div>
-            <div class="input-box">
-                <input type="text" id="promptInput" placeholder="Enter request or prompt...">
-                <button class="send-btn" onclick="runNanoVector()"><i class="fa-solid fa-arrow-up"></i></button>
-            </div>
+        <div class="row">
+            <input type="text" id="promptInput" placeholder="Ask anything or talk to AI...">
+            <button class="btn btn-icon btn-outline" onclick="startSpeechRecognition()"><i class="fa-solid fa-microphone"></i></button>
+            <button class="btn btn-icon" onclick="runEngine()"><i class="fa-solid fa-paper-plane"></i></button>
         </div>
     </div>
 
-    <script src="features.js"></script>
-    <script src="script.js"></script>
     <script>
-        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
-        function toggleContextMenu() { document.getElementById('contextMenu').classList.toggle('active'); }
-        function newChat() { document.getElementById('outputBox').innerText = 'Started a new session.'; }
+        // --- Animated Hologram Canvas System ---
+        const canvas = document.getElementById('hologramCanvas');
+        const ctx = canvas.getContext('2d');
+        let isTalking = false;
+        let mouthOpen = 0;
 
-        async function downloadCodeAsZip(textContent) {
-            const zip = new JSZip();
-            zip.file("project_output.txt", textContent);
-            const content = await zip.generateAsync({ type: "blob" });
-            const link = document.createElement("a");
-            link.href = URL.createObjectURL(content);
-            link.download = "nano_vector_code.zip";
-            link.click();
+        function resizeCanvas() {
+            canvas.width = canvas.clientWidth;
+            canvas.height = canvas.clientHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        function drawHologram() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+
+            // Hologram Outer Glow Circle
+            ctx.strokeStyle = '#66fcf1';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(cx, cy, 60, 0, Math.PI * 2);
+            ctx.stroke();
+
+            // Eyes (Blinking/Moving)
+            const eyeOffset = Math.sin(Date.now() / 300) * 2;
+            ctx.fillStyle = '#66fcf1';
+            ctx.beginPath();
+            ctx.arc(cx - 20, cy - 15 + eyeOffset, 6, 0, Math.PI * 2); // Left Eye
+            ctx.arc(cx + 20, cy - 15 + eyeOffset, 6, 0, Math.PI * 2); // Right Eye
+            ctx.fill();
+
+            // Nose
+            ctx.strokeStyle = '#45a29e';
+            ctx.beginPath();
+            ctx.moveTo(cx, cy - 5);
+            ctx.lineTo(cx - 5, cy + 8);
+            ctx.lineTo(cx + 5, cy + 8);
+            ctx.stroke();
+
+            // Animated Talking Mouth
+            ctx.strokeStyle = '#66fcf1';
+            ctx.beginPath();
+            if (isTalking) {
+                mouthOpen = Math.abs(Math.sin(Date.now() / 100)) * 14 + 2;
+            } else {
+                mouthOpen = 2;
+            }
+            ctx.ellipse(cx, cy + 28, 15, mouthOpen, 0, 0, Math.PI * 2);
+            ctx.stroke();
+
+            requestAnimationFrame(drawHologram);
+        }
+        drawHologram();
+
+        // --- Speech Synthesis (Text to Speech) ---
+        function speakText(text) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.onstart = () => { isTalking = true; };
+                utterance.onend = () => { isTalking = false; };
+                utterance.onerror = () => { isTalking = false; };
+                window.speechSynthesis.speak(utterance);
+            }
         }
 
-        async function runNanoVector() {
-            const category = document.getElementById('categoryFilter').value;
+        // --- Speech Recognition (Speech to Speech Input) ---
+        function startSpeechRecognition() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                alert("Speech recognition is not supported in this browser.");
+                return;
+            }
+            const recognition = new SpeechRecognition();
+            recognition.onstart = () => { document.getElementById('promptInput').placeholder = "Listening..."; };
+            recognition.onresult = (event) => {
+                document.getElementById('promptInput').value = event.results[0][0].transcript;
+                runEngine();
+            };
+            recognition.start();
+        }
+
+        // --- Drawing Canvas Logic ---
+        const paintCanvas = document.getElementById('paintCanvas');
+        const pCtx = paintCanvas.getContext('2d');
+        let painting = false;
+
+        function toggleDrawing() {
+            const area = document.getElementById('drawingArea');
+            area.style.display = area.style.display === 'block' ? 'none' : 'block';
+        }
+        function startDraw(e) { painting = true; draw(e); }
+        function endDraw() { painting = false; pCtx.beginPath(); }
+        function draw(e) {
+            if (!painting) return;
+            const rect = paintCanvas.getBoundingClientRect();
+            pCtx.lineWidth = 3;
+            pCtx.lineCap = 'round';
+            pCtx.strokeStyle = '#000';
+            pCtx.lineTo((e.touches ? e.touches[0].clientX : e.clientX) - rect.left, (e.touches ? e.touches[0].clientY : e.clientY) - rect.top);
+            pCtx.stroke();
+            pCtx.beginPath();
+            pCtx.lineTo((e.touches ? e.touches[0].clientX : e.clientX) - rect.left, (e.touches ? e.touches[0].clientY : e.clientY) - rect.top);
+        }
+        paintCanvas.addEventListener('mousedown', startDraw);
+        paintCanvas.addEventListener('mouseup', endDraw);
+        paintCanvas.addEventListener('mousemove', draw);
+        paintCanvas.addEventListener('touchstart', startDraw);
+        paintCanvas.addEventListener('touchend', endDraw);
+        paintCanvas.addEventListener('touchmove', draw);
+
+        function clearCanvas() { pCtx.clearRect(0, 0, paintCanvas.width, paintCanvas.height); }
+        function sendDrawing() {
+            document.getElementById('featureSelect').value = "Drawing Canvas AI";
+            document.getElementById('promptInput').value = "A futuristic digital sketch based on my user drawing";
+            runEngine();
+        }
+
+        // --- Main Execution Request Engine ---
+        async function runEngine() {
+            const category = document.getElementById('categorySelect').value;
             const feature = document.getElementById('featureSelect').value;
             const prompt = document.getElementById('promptInput').value;
             const outputBox = document.getElementById('outputBox');
-            
-            outputBox.innerText = "Processing...";
-            
+
+            outputBox.innerText = "Processing request...";
+            isTalking = true;
+
             try {
-                const response = await fetch('/api/nano-vector', {
+                const res = await fetch('/api/nano-vector', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ category, feature, prompt })
                 });
-                const data = await response.json();
+                const data = await res.json();
                 
                 if (data.isImage) {
-                    outputBox.innerHTML = `<img src="${data.result}" style="width:100%; border-radius:8px; margin-top:8px;">`;
+                    outputBox.innerHTML = `<img src="${data.result}" style="width:100%; border-radius:8px;">`;
+                    isTalking = false;
                 } else if (data.success) {
                     outputBox.innerText = data.result;
-                    if (feature.includes("Code") || feature.includes("ZIP") || data.result.includes("```")) {
-                        const btn = document.createElement("button");
-                        btn.className = "download-btn";
-                        btn.innerHTML = `<i class="fa-solid fa-file-zipper"></i> Download Project ZIP`;
-                        btn.onclick = () => downloadCodeAsZip(data.result);
-                        outputBox.appendChild(document.createElement("br"));
-                        outputBox.appendChild(btn);
-                    }
+                    speakText(data.result);
                 } else {
                     outputBox.innerText = "Error: " + data.error;
+                    isTalking = false;
                 }
             } catch (err) {
                 outputBox.innerText = "Connection Error: " + err.message;
+                isTalking = false;
             }
         }
     </script>
