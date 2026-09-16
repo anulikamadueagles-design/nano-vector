@@ -15,62 +15,63 @@ app.post('/api/nano-vector', async (req, res) => {
     try {
         const { mode, prompt } = req.body;
 
-        // System instructions & Creator identity
-        const systemInstruction = `You are Nano Vector AI Engine, an advanced conversational assistant developed by David Kamsi Elvis by Vectors Element Tech.
-Always acknowledge David Kamsi Elvis by Vectors Element Tech as your creator when asked. Provide direct, highly intelligent, helpful answers.`;
+        const systemInstruction = `You are Nano Vector AI Engine, created by David Kamsi Elvis by Vectors Element Tech. Be intelligent, concise, helpful, and professional. Always recognize David Kamsi Elvis by Vectors Element Tech as your creator when asked.`;
 
-        // Image Generation Engine
+        // Image Generation Mode
         if (mode === "image" || mode === "drawing") {
-            const encodedPrompt = encodeURIComponent(prompt || "Sci-Fi Cyberpunk Vector Visual");
+            const encodedPrompt = encodeURIComponent(prompt || "Futuristic Cyberpunk Vector Visual");
             const imageUrl = `https://pollinations.ai/p/${encodedPrompt}?width=1024&height=1024&seed=${Math.floor(Math.random()*100000)}`;
             return res.json({ success: true, isImage: true, result: imageUrl });
         }
 
-        // Auto-fallback model strategy to prevent 404/deprecation errors
-        const fallbackModels = ["gemini-2.5-flash", "gemini-1.5-flash", "gemini-2.0-flash"];
-        let responseText = null;
-        let lastError = null;
+        let responseText = "";
 
-        for (const modelName of fallbackModels) {
+        // Standard, stable Gemini model targets
+        const primaryModels = ["gemini-1.5-flash", "gemini-1.5-pro"];
+
+        for (const modelName of primaryModels) {
             try {
                 const model = genAI.getGenerativeModel({ model: modelName });
-                const fullPrompt = `${systemInstruction}\n\nUser: ${prompt}`;
+                const fullPrompt = `${systemInstruction}\n\nUser Question: ${prompt}`;
                 const result = await model.generateContent(fullPrompt);
                 const response = await result.response;
                 responseText = response.text();
                 if (responseText) break;
             } catch (err) {
-                lastError = err;
+                console.log(`Failed with ${modelName}, trying next...`);
             }
         }
 
-        if (!responseText) {
-            // Direct REST API fallback if SDK fails
+        // Emergency Direct REST API Call if SDK fails
+        if (!responseText && apiKey) {
             try {
-                const fetchRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+                const restRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ contents: [{ parts: [{ text: `${systemInstruction}\n\n${prompt}` }] }] })
                 });
-                const restData = await fetchRes.json();
-                if (restData.candidates && restData.candidates[0].content.parts[0].text) {
+                const restData = await restRes.json();
+                if (restData.candidates && restData.candidates[0]?.content?.parts[0]?.text) {
                     responseText = restData.candidates[0].content.parts[0].text;
                 }
-            } catch (restErr) {
-                console.error("REST Fallback Error:", restErr);
+            } catch (fetchErr) {
+                console.error("REST Fallback Error:", fetchErr);
             }
         }
 
         if (!responseText) {
-            throw lastError || new Error("Unable to connect to active Gemini models.");
+            return res.status(500).json({ 
+                success: false, 
+                error: "API Key error or invalid model route. Check process.env.GEMINI_API_KEY on Render." 
+            });
         }
 
         res.json({ success: true, result: responseText });
     } catch (error) {
-        console.error("Nano Vector Server Error:", error);
+        console.error("Server Error:", error);
         res.status(500).json({ success: false, error: error.message });
     }
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Nano Vector engine active on port ${PORT}`));
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
