@@ -14,22 +14,30 @@ app.post('/api/nano-vector', async (req, res) => {
     try {
         const { category, feature, prompt } = req.body;
 
-        // Custom Creator System Prompt
-        const systemInstruction = `You are Nano Vector AI Engine, an advanced AI system created by David Kamsi Elvis by Vectors Element Tech. 
-Your personality is intelligent, sleek, professional, and friendly. 
-When asked about your creator, clearly state that you were created by David Kamsi Elvis by Vectors Element Tech.
+        // Custom System Instruction with Creator Attribution
+        const systemInstruction = `You are Vector (Nano Vector AI Engine), a futuristic blue AI security and core intelligence assistant created by David Kamsi Elvis by Vectors Element Tech.
 Category: ${category}
 Feature: ${feature}
-User Input: ${prompt}`;
+User Input: ${prompt}
 
+Always acknowledge David Kamsi Elvis by Vectors Element Tech if asked about your creator. Provide concise, expert responses.`;
+
+        // Image Generation Handling
         if (feature === "AI Image Generator" || feature === "Drawing Canvas AI") {
-            const encodedPrompt = encodeURIComponent(prompt || "Sci-Fi Cyberpunk AI Hologram Face");
-            const imageUrl = `https://pollinations.ai/p/${encodedPrompt}?width=800&height=800&seed=${Math.floor(Math.random()*10000)}`;
+            const encodedPrompt = encodeURIComponent(prompt || "Sci-Fi Cyberpunk AI Assistant Hologram");
+            const imageUrl = `https://pollinations.ai/p/${encodedPrompt}?width=800&height=800&seed=${Math.floor(Math.random()*100000)}`;
             return res.json({ success: true, isImage: true, result: imageUrl });
         }
 
-        // Active Gemini models for 2026
-        const activeModels = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-2.5-pro"];
+        // Video Generation Handling (Simulated Video Loop / GIF Prompt Matrix)
+        if (feature === "AI Video Generator") {
+            const encodedPrompt = encodeURIComponent(prompt || "Futuristic AI Vector Security Loop");
+            const videoUrl = `https://pollinations.ai/p/${encodedPrompt}?width=800&height=450&nologo=true`;
+            return res.json({ success: true, isVideo: true, result: videoUrl });
+        }
+
+        // Active Gemini models including gemini-3.1-pro-preview
+        const activeModels = ["gemini-3.1-pro-preview", "gemini-2.0-flash", "gemini-1.5-flash"];
         let responseText = null;
         let lastError = null;
 
@@ -46,7 +54,7 @@ User Input: ${prompt}`;
         }
 
         if (!responseText) {
-            throw lastError || new Error("No available Gemini model could process the request.");
+            throw lastError || new Error("Unable to connect to Gemini API models.");
         }
 
         res.json({ success: true, result: responseText });
